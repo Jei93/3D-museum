@@ -3,144 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timeline de la Industria: Control Gestual</title>
+    <title>Gaming Industry Trends: Presenter Mode</title>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
 
-        body { margin: 0; overflow: hidden; background-color: #050505; font-family: 'Rajdhani', sans-serif; }
-        #canvas-container { width: 100vw; height: 100vh; display: block; }
-
-        /* UI Overlay Layer */
-        #ui-layer {
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Inter', sans-serif; }
+        
+        /* --- HUD (HEADS UP DISPLAY) --- */
+        /* Panel Superior: Contexto General */
+        #top-bar {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px;
+            top: 0; left: 0; width: 100%;
+            padding: 40px 60px;
             box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            pointer-events: none;
             z-index: 10;
-        }
-
-        /* Header */
-        .header {
-            text-align: left;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-        }
-        h1 { margin: 0; color: white; font-size: 2.5rem; text-transform: uppercase; letter-spacing: 2px; }
-        .legend { display: flex; gap: 20px; margin-top: 10px; font-size: 0.9rem; }
-        .dot { width: 12px; height: 12px; display: inline-block; border-radius: 50%; margin-right: 5px; }
-        .l-aaa { color: #ff4d4d; } .d-aaa { background: #ff4d4d; box-shadow: 0 0 8px #ff4d4d; }
-        .l-aa { color: #ffd700; } .d-aa { background: #ffd700; box-shadow: 0 0 8px #ffd700; }
-        .l-indie { color: #00ffff; } .d-indie { background: #00ffff; box-shadow: 0 0 8px #00ffff; }
-
-        /* Camera Feedback */
-        #cam-preview {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 160px;
-            height: 120px;
-            border: 2px solid #333;
-            border-radius: 10px;
-            transform: scaleX(-1); /* Espejo */
-            opacity: 0.7;
-            z-index: 20;
-            background: #000;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
         }
         
-        /* Status & Instructions */
-        #status-bar {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            color: rgba(255,255,255,0.8);
-            background: rgba(0,0,0,0.6);
-            padding: 10px 20px;
-            border-radius: 30px;
-            border: 1px solid rgba(255,255,255,0.2);
-            font-size: 1.2rem;
-            width: 60%;
+        h1 {
+            color: white; margin: 0; font-weight: 800; font-size: 2rem;
+            letter-spacing: -1px; text-transform: uppercase;
         }
-        .highlight { color: #00ffff; font-weight: bold; }
+        .subtitle { color: #888; font-size: 0.9rem; font-weight: 300; margin-top: 5px; }
 
-        /* Tooltip Flotante 3D (Simulado en 2D) */
-        #tooltip {
+        /* Indicador de Estado (Invisible salvo interacción) */
+        #gesture-feedback {
+            color: rgba(255,255,255,0.5);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+
+        /* Panel Inferior: Detalles (Solo aparece al "Entrar") */
+        #detail-panel {
             position: absolute;
-            background: rgba(10, 15, 20, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 20px;
-            border-radius: 8px;
+            bottom: 0; left: 0; width: 100%;
+            padding: 60px;
+            box-sizing: border-box;
+            background: linear-gradient(to top, rgba(0,0,0,1) 20%, transparent);
             color: white;
-            display: none;
-            backdrop-filter: blur(10px);
-            width: 300px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
-            transition: opacity 0.2s;
+            transform: translateY(100%); /* Oculto por defecto */
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            pointer-events: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
         }
-        .tt-year { font-size: 2rem; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 5px; margin-bottom: 10px; }
-        .tt-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .tt-event { margin-top: 10px; font-style: italic; color: #ffd700; border-left: 3px solid #ffd700; padding-left: 10px; }
+        
+        #detail-panel.active { transform: translateY(0); }
 
-        /* Loading Screen */
+        .big-year {
+            font-size: 8rem; font-weight: 800; line-height: 0.8;
+            background: -webkit-linear-gradient(#fff, #666);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stats-grid {
+            display: flex; gap: 40px; margin-bottom: 15px;
+        }
+        
+        .stat-item { display: flex; flex-direction: column; }
+        .stat-label { font-size: 0.75rem; text-transform: uppercase; color: #666; font-family: 'JetBrains Mono'; margin-bottom: 5px; }
+        .stat-val { font-size: 2.5rem; font-weight: 600; }
+        
+        .c-aaa { color: #ff3333; }
+        .c-aa { color: #ffcc00; }
+        .c-indie { color: #00ffff; }
+
+        .event-box {
+            max-width: 500px;
+            border-left: 4px solid #fff;
+            padding-left: 20px;
+        }
+        .event-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 10px; color: #fff; }
+        .event-desc { font-size: 1rem; color: #aaa; line-height: 1.5; }
+
+        /* Loader */
         #loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 100;
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
-            color: #00ffff;
+            color: white; font-family: 'JetBrains Mono';
         }
-        .loader-bar { width: 200px; height: 4px; background: #333; margin-top: 20px; border-radius: 2px; }
-        .loader-progress { width: 0%; height: 100%; background: #00ffff; transition: width 0.3s; }
-
     </style>
 
     <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
     <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.154.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.154.0/examples/jsm/"
-            }
-        }
+        { "imports": { "three": "https://unpkg.com/three@0.154.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.154.0/examples/jsm/" } }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
     <div id="loader">
-        <h2>INICIALIZANDO SISTEMA NEURAL...</h2>
-        <div style="font-size: 0.8rem; opacity: 0.7">Permite el acceso a la cámara para el control gestual</div>
-        <div class="loader-bar"><div class="loader-progress" id="load-bar"></div></div>
+        <p>INICIALIZANDO SISTEMA DE PRESENTACIÓN...</p>
+        <p style="font-size:0.8rem; color:#666">Por favor, permite el acceso a la cámara (Invisible)</p>
     </div>
 
-    <div id="ui-layer">
-        <div class="header">
-            <h1>Game Industry <span style="font-weight: 300; opacity: 0.7">Timeline</span></h1>
-            <div class="legend">
-                <span class="l-aaa"><span class="dot d-aaa"></span>AAA (Blockbuster)</span>
-                <span class="l-aa"><span class="dot d-aa"></span>AA (Estándar Dorado)</span>
-                <span class="l-indie"><span class="dot d-indie"></span>Indie (Innovación)</span>
+    <div id="top-bar">
+        <div>
+            <h1>The Shift</h1>
+            <div class="subtitle">ANÁLISIS DE MERCADO 2000-2025</div>
+        </div>
+        <div id="gesture-feedback">ESPERANDO GESTO...</div>
+    </div>
+
+    <div id="detail-panel">
+        <div>
+            <div class="big-year" id="ui-year">2000</div>
+            <div class="event-box">
+                <div class="event-title" id="ui-event-title"></div>
+                <div class="event-desc" id="ui-event-desc"></div>
             </div>
         </div>
-        
-        <div id="status-bar">
-            👋 Levanta tu mano para navegar. <span class="highlight">Izquierda/Derecha</span> para viajar en el tiempo.
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-label">AAA Power</span>
+                <span class="stat-val c-aaa" id="ui-aaa">88</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">AA Power</span>
+                <span class="stat-val c-aa" id="ui-aa">35</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Indie Power</span>
+                <span class="stat-val c-indie" id="ui-indie">15</span>
+            </div>
         </div>
     </div>
 
-    <div id="tooltip"></div>
-
     <video id="input-video" style="display:none"></video>
-    <canvas id="cam-preview"></canvas>
-
     <div id="canvas-container"></div>
 
     <script type="module">
@@ -151,281 +154,235 @@
         import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 
-        // ==========================================
-        // 1. DATASET COMPLETO (AAA + AA + INDIE)
-        // ==========================================
+        // --- DATOS ---
         const data = [
-            { year: 2000, aaa: 88, aa: 35, indie: 15, event: "Hegemonía Retail. AAA domina el 88% del mercado." },
-            { year: 2001, aaa: 87, aa: 36, indie: 18, event: "" },
-            { year: 2002, aaa: 86, aa: 38, indie: 21, event: "" },
-            { year: 2003, aaa: 85, aa: 39, indie: 24, event: "Nace Steam (Valve). Comienza la era digital." },
-            { year: 2004, aaa: 84, aa: 41, indie: 27, event: "Half-Life 2 define la física en juegos." },
-            { year: 2005, aaa: 83, aa: 42, indie: 30, event: "" },
-            { year: 2006, aaa: 82, aa: 44, indie: 33, event: "" },
-            { year: 2007, aaa: 82, aa: 45, indie: 36, event: "Bioshock y Portal: Narrativa emergente." },
-            { year: 2008, aaa: 81, aa: 47, indie: 39, event: "CRISIS ECONÓMICA + Braid (El Boom Indie)." },
-            { year: 2009, aaa: 80, aa: 48, indie: 42, event: "Minecraft en Alpha. El cambio de paradigma." },
-            { year: 2010, aaa: 79, aa: 50, indie: 45, event: "" },
-            { year: 2011, aaa: 78, aa: 52, indie: 48, event: "Dark Souls: El AA define un nuevo género." },
-            { year: 2012, aaa: 77, aa: 54, indie: 51, event: "Indie Game: The Movie populariza el sector." },
-            { year: 2013, aaa: 76, aa: 56, indie: 54, event: "" },
-            { year: 2014, aaa: 75, aa: 58, indie: 57, event: "" },
-            { year: 2015, aaa: 74, aa: 60, indie: 60, event: "Steam Direct. Saturación del mercado." },
-            { year: 2016, aaa: 73, aa: 62, indie: 63, event: "" },
-            { year: 2017, aaa: 72, aa: 64, indie: 66, event: "Hollow Knight / Hellblade (AA de lujo)." },
-            { year: 2018, aaa: 71, aa: 76, indie: 69, event: "El AA supera al AAA en percepción crítica." },
-            { year: 2019, aaa: 71, aa: 75, indie: 72, event: "" },
-            { year: 2020, aaa: 70, aa: 74, indie: 75, event: "PUNTO DE INFLEXIÓN: Hades (Indie) gana GOTY." },
-            { year: 2021, aaa: 69, aa: 73, indie: 78, event: "" },
-            { year: 2022, aaa: 68, aa: 72, indie: 81, event: "Elden Ring (Anomalía exitosa)." },
-            { year: 2023, aaa: 67, aa: 70, indie: 84, event: "Baldur's Gate 3: El triunfo del modelo clásico." },
-            { year: 2024, aaa: 66, aa: 69, indie: 87, event: "Despidos masivos en estudios AAA." },
-            { year: 2025, aaa: 65, aa: 68, indie: 90, event: "NUEVO ORDEN: Indie lidera, AA estabiliza." }
+            { year: 2000, aaa: 88, aa: 35, indie: 15, title: "La Era Dorada Retail", desc: "Dominio absoluto del formato físico y grandes editoras." },
+            { year: 2001, aaa: 87, aa: 36, indie: 18, title: "", desc: "" },
+            { year: 2002, aaa: 86, aa: 38, indie: 21, title: "", desc: "" },
+            { year: 2003, aaa: 85, aa: 39, indie: 24, title: "El Nacimiento de Steam", desc: "Valve inicia la transición digital, aunque resistida inicialmente." },
+            { year: 2004, aaa: 84, aa: 41, indie: 27, title: "", desc: "" },
+            { year: 2005, aaa: 83, aa: 42, indie: 30, title: "", desc: "" },
+            { year: 2006, aaa: 82, aa: 44, indie: 33, title: "", desc: "" },
+            { year: 2007, aaa: 82, aa: 45, indie: 36, title: "Narrativa Emergente", desc: "BioShock y Portal demuestran que el guion importa más que los gráficos." },
+            { year: 2008, aaa: 81, aa: 47, indie: 39, title: "CRISIS & EL BOOM INDIE", desc: "Braid demuestra que un equipo pequeño puede vender millones." },
+            { year: 2009, aaa: 80, aa: 48, indie: 42, title: "El Fenómeno Minecraft", desc: "Notch lanza la Alpha que cambiaría la industria para siempre." },
+            { year: 2010, aaa: 79, aa: 50, indie: 45, title: "", desc: "" },
+            { year: 2011, aaa: 78, aa: 52, indie: 48, title: "El Culto Dark Souls", desc: "FromSoftware redefine el AA: nicho pero de altísima fidelidad." },
+            { year: 2012, aaa: 77, aa: 54, indie: 51, title: "", desc: "" },
+            { year: 2013, aaa: 76, aa: 56, indie: 54, title: "", desc: "" },
+            { year: 2014, aaa: 75, aa: 58, indie: 57, title: "", desc: "" },
+            { year: 2015, aaa: 74, aa: 60, indie: 60, title: "Saturación del Mercado", desc: "Steam Direct abre las compuertas. El descubrimiento se vuelve vital." },
+            { year: 2016, aaa: 73, aa: 62, indie: 63, title: "", desc: "" },
+            { year: 2017, aaa: 72, aa: 64, indie: 66, title: "Indies Masivos", desc: "Hollow Knight ofrece 50 horas de contenido por 15$. El valor percibido cambia." },
+            { year: 2018, aaa: 71, aa: 76, indie: 69, title: "El Sorpasso de Calidad", desc: "La media crítica de los mejores AA supera a los AAA genéricos." },
+            { year: 2019, aaa: 71, aa: 75, indie: 72, title: "", desc: "" },
+            { year: 2020, aaa: 70, aa: 74, indie: 75, title: "EL GRAN PUNTO DE INFLEXIÓN", desc: "Hades gana el GOTY. Los indies ya no son 'juegos pequeños'." },
+            { year: 2021, aaa: 69, aa: 73, indie: 78, title: "", desc: "" },
+            { year: 2022, aaa: 68, aa: 72, indie: 81, title: "La Anomalía Elden Ring", desc: "Un AA con presupuesto AAA rompe todas las reglas de diseño moderno." },
+            { year: 2023, aaa: 67, aa: 70, indie: 84, title: "El Estándar Baldur's Gate", desc: "Demuestra que los jugadores quieren profundidad, no microtransacciones." },
+            { year: 2024, aaa: 66, aa: 69, indie: 87, title: "El Colapso Laboral", desc: "Despidos masivos en estudios AAA por costes insostenibles." },
+            { year: 2025, aaa: 65, aa: 68, indie: 90, title: "EL NUEVO ORDEN", desc: "Indie lidera innovación. AA es el estándar. AAA es nicho de lujo." }
         ];
 
-        // ==========================================
-        // 2. CONFIGURACIÓN THREE.JS
-        // ==========================================
+        // --- SCENE SETUP ---
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x050505);
-        scene.fog = new THREE.FogExp2(0x050505, 0.02); // Niebla densa para ocultar el final
+        scene.fog = new THREE.FogExp2(0x050505, 0.025);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-        
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-        // Iluminación
-        const ambientLight = new THREE.AmbientLight(0x404040, 2);
-        scene.add(ambientLight);
-        
-        const sunLight = new THREE.DirectionalLight(0xffffff, 1);
-        sunLight.position.set(0, 20, 10);
-        scene.add(sunLight);
+        // Lights
+        scene.add(new THREE.AmbientLight(0x404040, 3));
+        const spot = new THREE.SpotLight(0xffffff, 50);
+        spot.position.set(0, 20, 10);
+        spot.angle = 0.5;
+        scene.add(spot);
 
-        // Suelo Grid Infinito
-        const grid = new THREE.GridHelper(200, 100, 0x333333, 0x111111);
+        // Floor
+        const grid = new THREE.GridHelper(200, 50, 0x222222, 0x111111);
         scene.add(grid);
 
-        // Grupo principal
-        const timelineGroup = new THREE.Group();
-        scene.add(timelineGroup);
-
-        // Materiales
-        const matAAA = new THREE.MeshStandardMaterial({ color: 0xff4d4d, roughness: 0.1, metalness: 0.8, emissive: 0x550000 });
-        const matAA = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.1, metalness: 0.9, emissive: 0x665500 });
-        const matIndie = new THREE.MeshStandardMaterial({ color: 0x00ffff, roughness: 0.1, metalness: 0.8, emissive: 0x004444 });
+        // Objects
+        const group = new THREE.Group();
+        scene.add(group);
+        const spacing = 8;
         
-        // ==========================================
-        // 3. CONSTRUCCIÓN DEL MUNDO (GENERACIÓN PROCEDURAL)
-        // ==========================================
-        const spacing = 6; // Espacio entre años
+        const matAAA = new THREE.MeshStandardMaterial({ color: 0xff3333, roughness: 0.2, metalness: 0.8 });
+        const matAA = new THREE.MeshStandardMaterial({ color: 0xffcc00, roughness: 0.2, metalness: 0.8 });
+        const matIndie = new THREE.MeshStandardMaterial({ color: 0x00ffff, roughness: 0.2, metalness: 0.8 });
         
+        // Font
         const loader = new FontLoader();
-        loader.load('https://unpkg.com/three@0.154.0/examples/fonts/helvetiker_bold.typeface.json', function (font) {
-            
+        loader.load('https://unpkg.com/three@0.154.0/examples/fonts/helvetiker_bold.typeface.json', (font) => {
             data.forEach((d, i) => {
                 const z = -i * spacing;
                 
-                // --- BARRA AAA (Izquierda Lejana) ---
-                const hAAA = d.aaa / 8;
-                const meshAAA = new THREE.Mesh(new THREE.BoxGeometry(1, hAAA, 1), matAAA);
-                meshAAA.position.set(-6, hAAA/2, z);
-                timelineGroup.add(meshAAA);
+                // Bars
+                const b1 = new THREE.Mesh(new THREE.BoxGeometry(1.5, d.aaa/6, 1.5), matAAA);
+                b1.position.set(-5, d.aaa/12, z);
+                group.add(b1);
+                
+                const b2 = new THREE.Mesh(new THREE.BoxGeometry(1.5, d.aa/6, 1.5), matAA);
+                b2.position.set(0, d.aa/12, z);
+                group.add(b2);
+                
+                const b3 = new THREE.Mesh(new THREE.BoxGeometry(1.5, d.indie/6, 1.5), matIndie);
+                b3.position.set(5, d.indie/12, z);
+                group.add(b3);
 
-                // --- BARRA AA (Centro-Izquierda) ---
-                const hAA = d.aa / 8;
-                const meshAA = new THREE.Mesh(new THREE.BoxGeometry(1, hAA, 1), matAA);
-                meshAA.position.set(-2, hAA/2, z);
-                timelineGroup.add(meshAA);
-
-                // --- BARRA INDIE (Derecha) ---
-                const hIndie = d.indie / 8;
-                const meshIndie = new THREE.Mesh(new THREE.BoxGeometry(1, hIndie, 1), matIndie);
-                meshIndie.position.set(2, hIndie/2, z);
-                timelineGroup.add(meshIndie);
-
-                // --- SUELO DEL AÑO ---
-                const yearGeo = new TextGeometry(d.year.toString(), { font: font, size: 0.8, height: 0.1 });
-                const yearMesh = new THREE.Mesh(yearGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }));
-                yearMesh.position.set(4, 0.1, z);
-                yearMesh.rotation.x = -Math.PI / 2;
-                timelineGroup.add(yearMesh);
-
-                // --- LÍNEAS DE CONEXIÓN (VISUAL) ---
-                if (i > 0) {
-                    const prevZ = -(i-1) * spacing;
-                    // Conexión sutil en el suelo
-                    const lineGeo = new THREE.BufferGeometry().setFromPoints([
-                        new THREE.Vector3(0, 0.05, prevZ), new THREE.Vector3(0, 0.05, z)
-                    ]);
-                    const line = new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: 0x333333 }));
-                    timelineGroup.add(line);
-                }
-
-                // Guardar datos en un objeto invisible para Raycasting/Detección
-                const triggerObj = new THREE.Mesh(new THREE.BoxGeometry(14, 10, spacing), new THREE.MeshBasicMaterial({ visible: false }));
-                triggerObj.position.set(0, 5, z);
-                triggerObj.userData = d; // Guardar datos aquí
-                timelineGroup.add(triggerObj);
+                // Year Text on Floor
+                const tGeo = new TextGeometry(d.year.toString(), { font, size: 1, height: 0.1 });
+                const tMesh = new THREE.Mesh(tGeo, new THREE.MeshBasicMaterial({ color: 0x444444 }));
+                tMesh.position.set(8, 0.1, z);
+                tMesh.rotation.x = -Math.PI/2;
+                group.add(tMesh);
+                
+                // Store data for retrieval
+                const trigger = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial({visible:false}));
+                trigger.position.set(0,0,z);
+                trigger.userData = d;
+                group.add(trigger);
             });
-
-            document.getElementById('load-bar').style.width = '100%';
-            setTimeout(() => document.getElementById('loader').style.display = 'none', 1000);
+            document.getElementById('loader').style.display = 'none';
         });
 
-        // ==========================================
-        // 4. POST-PROCESSING (BLOOM)
-        // ==========================================
+        // Bloom
         const composer = new EffectComposer(renderer);
         composer.addPass(new RenderPass(scene, camera));
-        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-        bloomPass.threshold = 0.1;
-        bloomPass.strength = 0.8;
-        bloomPass.radius = 0.5;
-        composer.addPass(bloomPass);
+        const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+        bloom.threshold = 0.1; bloom.strength = 0.6; bloom.radius = 0.1;
+        composer.addPass(bloom);
 
-        // ==========================================
-        // 5. SISTEMA DE CONTROL GESTUAL (MEDIAPIPE)
-        // ==========================================
-        const videoElement = document.getElementById('input-video');
-        const canvasElement = document.getElementById('cam-preview');
-        const canvasCtx = canvasElement.getContext('2d');
+        // --- CONTROL LOGIC ---
+        let targetZ = 0;
+        let currentZ = 0;
+        let handX = 0.5;
+        let isFist = false;
+        let isFocused = false; // "Entering" a section state
+        let focusTargetZ = 0;
+
+        // UI Elements
+        const uiPanel = document.getElementById('detail-panel');
+        const feedback = document.getElementById('gesture-feedback');
+
+        // Hand Tracking
+        const video = document.getElementById('input-video');
+        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6 });
         
-        let targetZ = 0; // Donde queremos que esté la cámara
-        let currentZ = 0; // Donde está realmente la cámara (interpolación)
-        let handX = 0.5; // Posición X de la mano (0 a 1)
-
-        function onResults(results) {
-            // Dibujar preview de cámara
-            canvasCtx.save();
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
-            
-            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                const hand = results.multiHandLandmarks[0];
+        hands.onResults((results) => {
+            if (results.multiHandLandmarks.length > 0) {
+                const lm = results.multiHandLandmarks[0];
                 
-                // Dibujar esqueleto simple
-                drawConnectors(canvasCtx, hand, HAND_CONNECTIONS, {color: '#00ffff', lineWidth: 2});
+                // 1. Navigation (X Position) - Inverted for mirror effect
+                handX = 1 - lm[9].x; // Middle finger knuckle
                 
-                // Usar la posición X de la muñeca o dedo índice para controlar el tiempo
-                // MediaPipe X: 0 (izq) a 1 (der). Invertido por el efecto espejo.
-                handX = 1 - hand[8].x; // Punta del dedo índice
+                // 2. Gesture Detection (Fist vs Open)
+                // Simple logic: distance between wrist and finger tips
+                const wrist = lm[0];
+                const tip = lm[12]; // Middle finger tip
+                const dist = Math.sqrt(Math.pow(wrist.x - tip.x, 2) + Math.pow(wrist.y - tip.y, 2));
                 
-                // Feedback visual en UI
-                const status = document.getElementById('status-bar');
-                if (handX < 0.3) {
-                    status.innerHTML = "⏪ Rebobinando al Pasado";
-                    status.style.color = "#ff4d4d";
-                } else if (handX > 0.7) {
-                    status.innerHTML = "⏩ Avanzando al Futuro";
-                    status.style.color = "#00ffff";
-                } else {
-                    status.innerHTML = "⏸️ Pausado / Zona Muerta";
-                    status.style.color = "white";
-                }
-
+                // Threshold calibration may vary, but < 0.15 is usually a fist/closed hand
+                isFist = dist < 0.2; 
             } else {
-                document.getElementById('status-bar').innerText = "❌ Mano no detectada. Usa el ratón.";
-                handX = 0.5; // Neutral
+                handX = 0.5; // Stop if no hand
             }
-            canvasCtx.restore();
-        }
-
-        const hands = new Hands({locateFile: (file) => {
-            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-        }});
-        
-        hands.setOptions({
-            maxNumHands: 1,
-            modelComplexity: 1,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
         });
-        
-        hands.onResults(onResults);
 
-        const cameraUtils = new Camera(videoElement, {
-            onFrame: async () => { await hands.send({image: videoElement}); },
-            width: 320,
-            height: 240
-        });
-        cameraUtils.start();
+        const cam = new Camera(video, { onFrame: async () => await hands.send({image: video}), width: 640, height: 480 });
+        cam.start();
 
-        // ==========================================
-        // 6. LÓGICA DE MOVIMIENTO Y VISUALIZACIÓN
-        // ==========================================
-        
-        // Raycaster para detectar en qué año estamos
-        const raycaster = new THREE.Raycaster();
-        const tooltip = document.getElementById('tooltip');
-
-        function updateCamera() {
-            // Velocidad base
-            let speed = 0;
-            
-            // Lógica de control con la mano
-            // Zona muerta entre 0.4 y 0.6
-            if (handX > 0.65) speed = -0.3; // Avanzar (Z negativo)
-            if (handX < 0.35) speed = 0.3;  // Retroceder
-            
-            targetZ += speed;
-
-            // Límites
-            const maxZ = 2; 
-            const minZ = -(data.length * spacing) - 5;
-            if (targetZ > maxZ) targetZ = maxZ;
-            if (targetZ < minZ) targetZ = minZ;
-
-            // Suavizado (Lerp) para que no maree
-            currentZ += (targetZ - currentZ) * 0.05;
-
-            // Posicionar cámara
-            camera.position.set(0, 4, currentZ + 10); // Cámara detrás del punto actual
-            camera.lookAt(0, 2, currentZ - 10); // Mirar hacia adelante
-        }
-
-        function checkDataIntersection() {
-            // Lanzar rayo hacia abajo desde la posición "virtual" de la cámara
-            const origin = new THREE.Vector3(0, 10, currentZ);
-            const direction = new THREE.Vector3(0, -1, 0);
-            raycaster.set(origin, direction);
-
-            const intersects = raycaster.intersectObjects(timelineGroup.children);
-            
-            if (intersects.length > 0) {
-                const obj = intersects[0].object;
-                if (obj.userData && obj.userData.year) {
-                    const d = obj.userData;
-                    
-                    // Actualizar Tooltip
-                    tooltip.style.display = 'block';
-                    tooltip.innerHTML = `
-                        <div class="tt-year">${d.year}</div>
-                        <div class="tt-row"><span class="l-aaa">AAA Power</span> <span>${d.aaa}/100</span></div>
-                        <div class="tt-row"><span class="l-aa">AA Power</span> <span>${d.aa}/100</span></div>
-                        <div class="tt-row"><span class="l-indie">Indie Power</span> <span>${d.indie}/100</span></div>
-                        ${d.event ? `<div class="tt-event">${d.event}</div>` : ''}
-                    `;
-                }
-            }
-        }
-
-        // ==========================================
-        // 7. LOOP PRINCIPAL
-        // ==========================================
+        // Animation Loop
         function animate() {
             requestAnimationFrame(animate);
+
+            // LOGIC
+            if (isFocused) {
+                // FOCUS MODE: Locked onto a specific year
+                feedback.innerHTML = "MODO DETALLE (ABRE LA MANO PARA SALIR)";
+                feedback.style.color = "#00ffff";
+                
+                // Smooth snap to target
+                currentZ += (focusTargetZ - currentZ) * 0.1;
+                
+                // Exit condition
+                if (!isFist) {
+                    isFocused = false;
+                    uiPanel.classList.remove('active');
+                }
+                
+            } else {
+                // NAVIGATION MODE
+                uiPanel.classList.remove('active');
+                
+                // Movement logic
+                let speed = 0;
+                if (handX > 0.7) speed = -0.5; // Right -> Future
+                if (handX < 0.3) speed = 0.5;  // Left -> Past
+                
+                if (speed !== 0) {
+                    feedback.innerHTML = speed < 0 ? ">>> AVANZANDO" : "<<< RETROCEDIENDO";
+                    feedback.style.color = "white";
+                } else {
+                    feedback.innerHTML = "PARADO (CIERRA PUÑO PARA ENTRAR)";
+                    feedback.style.color = "#888";
+                }
+
+                targetZ += speed;
+                
+                // Limits
+                const maxZ = 2;
+                const minZ = -(data.length * spacing) + 10;
+                targetZ = Math.max(minZ, Math.min(maxZ, targetZ));
+                
+                currentZ += (targetZ - currentZ) * 0.05;
+
+                // Check for "Enter" gesture
+                if (isFist && Math.abs(speed) === 0) {
+                    // Find nearest year
+                    const index = Math.round(Math.abs(currentZ) / spacing);
+                    const d = data[index];
+                    
+                    if (d) {
+                        isFocused = true;
+                        focusTargetZ = -index * spacing; // Snap to exact position
+                        
+                        // Update UI
+                        document.getElementById('ui-year').innerText = d.year;
+                        document.getElementById('ui-aaa').innerText = d.aaa;
+                        document.getElementById('ui-aa').innerText = d.aa;
+                        document.getElementById('ui-indie').innerText = d.indie;
+                        
+                        document.getElementById('ui-event-title').innerText = d.title || "Sin eventos destacados";
+                        document.getElementById('ui-event-desc').innerText = d.desc || "";
+                        
+                        uiPanel.classList.add('active');
+                    }
+                }
+            }
+
+            // Camera update
+            // Standard View: Behind and above
+            let camY = 8;
+            let camZOffset = 15;
             
-            updateCamera();
-            checkDataIntersection();
-            
+            if (isFocused) {
+                // Focus View: Lower and closer for drama
+                camY = 4;
+                camZOffset = 8;
+            }
+
+            camera.position.lerp(new THREE.Vector3(0, camY, currentZ + camZOffset), 0.05);
+            camera.lookAt(0, 2, currentZ - 5);
+
             composer.render();
         }
 
-        // Listeners básicos
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -433,15 +390,7 @@
             composer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Fallback Mouse Control (si falla la cámara o para testing)
-        window.addEventListener('mousemove', (e) => {
-            if(!videoElement.srcObject) { // Solo si no hay video
-                handX = e.clientX / window.innerWidth;
-            }
-        });
-
         animate();
-
     </script>
 </body>
 </html>
