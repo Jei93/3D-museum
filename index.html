@@ -3,97 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gaming Industry Trends: Presenter Mode</title>
+    <title>Presentación de Datos: The Gaming Shift</title>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;600;800&family=JetBrains+Mono:wght@500&display=swap');
 
-        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Inter', sans-serif; }
+        body { margin: 0; overflow: hidden; background-color: #0a0a0a; font-family: 'Manrope', sans-serif; }
         
         /* --- HUD (HEADS UP DISPLAY) --- */
-        /* Panel Superior: Contexto General */
         #top-bar {
             position: absolute;
             top: 0; left: 0; width: 100%;
-            padding: 40px 60px;
+            padding: 30px 50px;
             box-sizing: border-box;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             pointer-events: none;
             z-index: 10;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
         }
         
         h1 {
-            color: white; margin: 0; font-weight: 800; font-size: 2rem;
-            letter-spacing: -1px; text-transform: uppercase;
+            color: white; margin: 0; font-weight: 800; font-size: 1.8rem;
+            letter-spacing: -0.5px; text-transform: uppercase;
         }
-        .subtitle { color: #888; font-size: 0.9rem; font-weight: 300; margin-top: 5px; }
-
-        /* Indicador de Estado (Invisible salvo interacción) */
-        #gesture-feedback {
-            color: rgba(255,255,255,0.5);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            transition: color 0.3s;
+        
+        /* Indicador de Estado de Navegación */
+        .nav-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
+        
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #555; transition: background 0.3s; }
+        .status-text { color: rgba(255,255,255,0.8); font-size: 0.8rem; font-family: 'JetBrains Mono'; text-transform: uppercase; }
 
-        /* Panel Inferior: Detalles (Solo aparece al "Entrar") */
+        /* Estados del indicador */
+        .nav-status.moving .status-dot { background: #00ffff; box-shadow: 0 0 10px #00ffff; }
+        .nav-status.locked .status-dot { background: #ffcc00; box-shadow: 0 0 10px #ffcc00; }
+        .nav-status.locked .status-text { color: #ffcc00; font-weight: bold; }
+
+        /* PANEL DE DETALLE INFERIOR (Solo aparece al bloquear) */
         #detail-panel {
             position: absolute;
-            bottom: 0; left: 0; width: 100%;
-            padding: 60px;
-            box-sizing: border-box;
-            background: linear-gradient(to top, rgba(0,0,0,1) 20%, transparent);
+            bottom: 40px; left: 50%;
+            transform: translateX(-50%) translateY(150%); /* Oculto abajo */
+            width: 90%; max-width: 1000px;
+            background: rgba(15, 15, 15, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
             color: white;
-            transform: translateY(100%); /* Oculto por defecto */
-            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-            pointer-events: none;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
+            align-items: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
         
-        #detail-panel.active { transform: translateY(0); }
+        #detail-panel.active { transform: translateX(-50%) translateY(0); }
 
-        .big-year {
-            font-size: 8rem; font-weight: 800; line-height: 0.8;
-            background: -webkit-linear-gradient(#fff, #666);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-variant-numeric: tabular-nums;
-        }
+        .detail-left { width: 60%; padding-right: 30px; border-right: 1px solid rgba(255,255,255,0.1); }
+        .detail-year { font-size: 3.5rem; font-weight: 800; line-height: 1; margin-bottom: 10px; background: linear-gradient(45deg, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
+        .detail-event { font-size: 1.2rem; color: #ffcc00; margin-bottom: 5px; font-weight: 600; }
+        .detail-desc { font-size: 0.95rem; color: #bbb; line-height: 1.5; }
 
-        .stats-grid {
-            display: flex; gap: 40px; margin-bottom: 15px;
-        }
-        
-        .stat-item { display: flex; flex-direction: column; }
-        .stat-label { font-size: 0.75rem; text-transform: uppercase; color: #666; font-family: 'JetBrains Mono'; margin-bottom: 5px; }
-        .stat-val { font-size: 2.5rem; font-weight: 600; }
-        
-        .c-aaa { color: #ff3333; }
-        .c-aa { color: #ffcc00; }
-        .c-indie { color: #00ffff; }
+        .detail-right { width: 35%; display: flex; flex-direction: column; gap: 10px; }
+        .bar-container { display: flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono'; font-size: 0.8rem; }
+        .bar-label { width: 50px; color: #666; }
+        .bar-bg { flex-grow: 1; height: 6px; background: #333; border-radius: 3px; overflow: hidden; }
+        .bar-fill { height: 100%; width: 0%; transition: width 1s ease-out; }
+        .bar-val { width: 30px; text-align: right; color: white; }
 
-        .event-box {
-            max-width: 500px;
-            border-left: 4px solid #fff;
-            padding-left: 20px;
+        /* Colores */
+        .c-aaa { color: #ff4d4d; } .bg-aaa { background: #ff4d4d; }
+        .c-aa { color: #ffd700; } .bg-aa { background: #ffd700; }
+        .c-indie { color: #00ffff; } .bg-indie { background: #00ffff; }
+
+        /* Feedback visual de mano */
+        #hand-guide {
+            position: absolute;
+            bottom: 20px; right: 20px;
+            font-size: 0.7rem; color: rgba(255,255,255,0.3);
+            text-align: right; pointer-events: none;
         }
-        .event-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 10px; color: #fff; }
-        .event-desc { font-size: 1rem; color: #aaa; line-height: 1.5; }
 
         /* Loader */
         #loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 100;
+            background: #0a0a0a; z-index: 100;
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
-            color: white; font-family: 'JetBrains Mono';
+            color: white; font-family: 'Manrope';
         }
+        .loader-spinner {
+            width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid #00ffff; border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 
     <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
@@ -107,40 +122,46 @@
 <body>
 
     <div id="loader">
-        <p>INICIALIZANDO SISTEMA DE PRESENTACIÓN...</p>
-        <p style="font-size:0.8rem; color:#666">Por favor, permite el acceso a la cámara (Invisible)</p>
+        <div class="loader-spinner"></div>
+        <p>CALIBRANDO ENTORNO 3D...</p>
     </div>
 
     <div id="top-bar">
-        <div>
-            <h1>The Shift</h1>
-            <div class="subtitle">ANÁLISIS DE MERCADO 2000-2025</div>
+        <h1>Market<span style="color:#666">Shift</span> <span style="font-size:0.5em; vertical-align:middle; background:#333; padding:2px 6px; border-radius:4px;">LIVE DATA</span></h1>
+        
+        <div class="nav-status" id="nav-badge">
+            <div class="status-dot"></div>
+            <div class="status-text" id="status-text">LISTO</div>
         </div>
-        <div id="gesture-feedback">ESPERANDO GESTO...</div>
     </div>
 
     <div id="detail-panel">
-        <div>
-            <div class="big-year" id="ui-year">2000</div>
-            <div class="event-box">
-                <div class="event-title" id="ui-event-title"></div>
-                <div class="event-desc" id="ui-event-desc"></div>
+        <div class="detail-left">
+            <div class="detail-year" id="ui-year">2000</div>
+            <div class="detail-event" id="ui-event"></div>
+            <div class="detail-desc" id="ui-desc"></div>
+        </div>
+        <div class="detail-right">
+            <div class="bar-container">
+                <span class="bar-label">AAA</span>
+                <div class="bar-bg"><div class="bar-fill bg-aaa" id="fill-aaa"></div></div>
+                <span class="bar-val" id="val-aaa">0</span>
+            </div>
+            <div class="bar-container">
+                <span class="bar-label">AA</span>
+                <div class="bar-bg"><div class="bar-fill bg-aa" id="fill-aa"></div></div>
+                <span class="bar-val" id="val-aa">0</span>
+            </div>
+            <div class="bar-container">
+                <span class="bar-label">INDIE</span>
+                <div class="bar-bg"><div class="bar-fill bg-indie" id="fill-indie"></div></div>
+                <span class="bar-val" id="val-indie">0</span>
             </div>
         </div>
-        <div class="stats-grid">
-            <div class="stat-item">
-                <span class="stat-label">AAA Power</span>
-                <span class="stat-val c-aaa" id="ui-aaa">88</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">AA Power</span>
-                <span class="stat-val c-aa" id="ui-aa">35</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Indie Power</span>
-                <span class="stat-val c-indie" id="ui-indie">15</span>
-            </div>
-        </div>
+    </div>
+
+    <div id="hand-guide">
+        Control Gestual Activo<br>Centro: Auto-Lock | Lados: Navegar
     </div>
 
     <video id="input-video" style="display:none"></video>
@@ -150,235 +171,258 @@
         import * as THREE from 'three';
         import { FontLoader } from 'three/addons/loaders/FontLoader.js';
         import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
         import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
         // --- DATOS ---
         const data = [
-            { year: 2000, aaa: 88, aa: 35, indie: 15, title: "La Era Dorada Retail", desc: "Dominio absoluto del formato físico y grandes editoras." },
+            { year: 2000, aaa: 88, aa: 35, indie: 15, title: "Hegemonía Retail", desc: "El formato físico es rey. Los AAA dominan el 88% del mercado global." },
             { year: 2001, aaa: 87, aa: 36, indie: 18, title: "", desc: "" },
             { year: 2002, aaa: 86, aa: 38, indie: 21, title: "", desc: "" },
-            { year: 2003, aaa: 85, aa: 39, indie: 24, title: "El Nacimiento de Steam", desc: "Valve inicia la transición digital, aunque resistida inicialmente." },
+            { year: 2003, aaa: 85, aa: 39, indie: 24, title: "Nace Steam", desc: "Valve inicia la transición digital. Comienza tímida, pero cambiará todo." },
             { year: 2004, aaa: 84, aa: 41, indie: 27, title: "", desc: "" },
             { year: 2005, aaa: 83, aa: 42, indie: 30, title: "", desc: "" },
             { year: 2006, aaa: 82, aa: 44, indie: 33, title: "", desc: "" },
-            { year: 2007, aaa: 82, aa: 45, indie: 36, title: "Narrativa Emergente", desc: "BioShock y Portal demuestran que el guion importa más que los gráficos." },
-            { year: 2008, aaa: 81, aa: 47, indie: 39, title: "CRISIS & EL BOOM INDIE", desc: "Braid demuestra que un equipo pequeño puede vender millones." },
-            { year: 2009, aaa: 80, aa: 48, indie: 42, title: "El Fenómeno Minecraft", desc: "Notch lanza la Alpha que cambiaría la industria para siempre." },
+            { year: 2007, aaa: 82, aa: 45, indie: 36, title: "Narrativa Emergente", desc: "BioShock y Portal: El guion empieza a pesar más que los polígonos." },
+            { year: 2008, aaa: 81, aa: 47, indie: 39, title: "CRISIS & BRAID", desc: "Crisis financiera global + Lanzamiento de Braid: El Boom Indie comienza." },
+            { year: 2009, aaa: 80, aa: 48, indie: 42, title: "Minecraft Alpha", desc: "Un solo desarrollador cambia las reglas. El poder de la comunidad." },
             { year: 2010, aaa: 79, aa: 50, indie: 45, title: "", desc: "" },
-            { year: 2011, aaa: 78, aa: 52, indie: 48, title: "El Culto Dark Souls", desc: "FromSoftware redefine el AA: nicho pero de altísima fidelidad." },
+            { year: 2011, aaa: 78, aa: 52, indie: 48, title: "Dark Souls", desc: "FromSoftware define el AA moderno: Nicho, difícil y de altísima calidad." },
             { year: 2012, aaa: 77, aa: 54, indie: 51, title: "", desc: "" },
             { year: 2013, aaa: 76, aa: 56, indie: 54, title: "", desc: "" },
             { year: 2014, aaa: 75, aa: 58, indie: 57, title: "", desc: "" },
-            { year: 2015, aaa: 74, aa: 60, indie: 60, title: "Saturación del Mercado", desc: "Steam Direct abre las compuertas. El descubrimiento se vuelve vital." },
+            { year: 2015, aaa: 74, aa: 60, indie: 60, title: "Saturación Steam", desc: "Steam Direct. Demasiados juegos, la visibilidad es el nuevo oro." },
             { year: 2016, aaa: 73, aa: 62, indie: 63, title: "", desc: "" },
-            { year: 2017, aaa: 72, aa: 64, indie: 66, title: "Indies Masivos", desc: "Hollow Knight ofrece 50 horas de contenido por 15$. El valor percibido cambia." },
-            { year: 2018, aaa: 71, aa: 76, indie: 69, title: "El Sorpasso de Calidad", desc: "La media crítica de los mejores AA supera a los AAA genéricos." },
+            { year: 2017, aaa: 72, aa: 64, indie: 66, title: "Indies Masivos", desc: "Hollow Knight. Calidad AAA a precio Indie." },
+            { year: 2018, aaa: 71, aa: 76, indie: 69, title: "Sorpasso de Calidad", desc: "La media crítica de los AA supera por primera vez a los AAA genéricos." },
             { year: 2019, aaa: 71, aa: 75, indie: 72, title: "", desc: "" },
-            { year: 2020, aaa: 70, aa: 74, indie: 75, title: "EL GRAN PUNTO DE INFLEXIÓN", desc: "Hades gana el GOTY. Los indies ya no son 'juegos pequeños'." },
+            { year: 2020, aaa: 70, aa: 74, indie: 75, title: "PUNTO DE INFLEXIÓN", desc: "Hades (Indie) gana GOTY. La barrera AAA/Indie se rompe." },
             { year: 2021, aaa: 69, aa: 73, indie: 78, title: "", desc: "" },
-            { year: 2022, aaa: 68, aa: 72, indie: 81, title: "La Anomalía Elden Ring", desc: "Un AA con presupuesto AAA rompe todas las reglas de diseño moderno." },
-            { year: 2023, aaa: 67, aa: 70, indie: 84, title: "El Estándar Baldur's Gate", desc: "Demuestra que los jugadores quieren profundidad, no microtransacciones." },
-            { year: 2024, aaa: 66, aa: 69, indie: 87, title: "El Colapso Laboral", desc: "Despidos masivos en estudios AAA por costes insostenibles." },
-            { year: 2025, aaa: 65, aa: 68, indie: 90, title: "EL NUEVO ORDEN", desc: "Indie lidera innovación. AA es el estándar. AAA es nicho de lujo." }
+            { year: 2022, aaa: 68, aa: 72, indie: 81, title: "La Anomalía", desc: "Elden Ring: Un AA con esteroides domina el mundo." },
+            { year: 2023, aaa: 67, aa: 70, indie: 84, title: "El Nuevo Estándar", desc: "Baldur's Gate 3 demuestra que la profundidad gana a la monetización." },
+            { year: 2024, aaa: 66, aa: 69, indie: 87, title: "Colapso Laboral", desc: "Costes insostenibles en AAA provocan despidos masivos." },
+            { year: 2025, aaa: 65, aa: 68, indie: 90, title: "EL NUEVO ORDEN", desc: "Indie lidera innovación. AA es el estándar de calidad. AAA es nicho." }
         ];
 
-        // --- SCENE SETUP ---
+        // --- CONFIGURACIÓN THREE.JS ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x050505);
-        scene.fog = new THREE.FogExp2(0x050505, 0.025);
+        scene.background = new THREE.Color(0x0a0a0a); // Gris muy oscuro, no negro puro
+        scene.fog = new THREE.Fog(0x0a0a0a, 10, 50);
 
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        renderer.toneMappingExposure = 1.2; // Más brillante
         document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-        // Lights
-        scene.add(new THREE.AmbientLight(0x404040, 3));
-        const spot = new THREE.SpotLight(0xffffff, 50);
-        spot.position.set(0, 20, 10);
-        spot.angle = 0.5;
-        scene.add(spot);
+        // --- ILUMINACIÓN DE ESTUDIO (MEJORADA) ---
+        // 1. Luz Ambiental base (para que nada sea negro absoluto)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); 
+        scene.add(ambientLight);
 
-        // Floor
-        const grid = new THREE.GridHelper(200, 50, 0x222222, 0x111111);
-        scene.add(grid);
+        // 2. Hemisphere Light (Cielo azulado / Suelo cálido)
+        const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x222222, 0.5);
+        scene.add(hemiLight);
 
-        // Objects
+        // 3. Key Light (Principal que genera sombras suaves)
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        dirLight.position.set(5, 10, 5);
+        scene.add(dirLight);
+
+        // --- MATERIALES (OPTIMIZADOS PARA LUZ) ---
+        // Usamos emissive suave para que siempre se vean los colores
+        const matAAA = new THREE.MeshStandardMaterial({ 
+            color: 0xff4d4d, roughness: 0.3, metalness: 0.5, emissive: 0x550000, emissiveIntensity: 0.2 
+        });
+        const matAA = new THREE.MeshStandardMaterial({ 
+            color: 0xffd700, roughness: 0.3, metalness: 0.6, emissive: 0x664400, emissiveIntensity: 0.2 
+        });
+        const matIndie = new THREE.MeshStandardMaterial({ 
+            color: 0x00ffff, roughness: 0.3, metalness: 0.5, emissive: 0x003333, emissiveIntensity: 0.2 
+        });
+        const matText = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+        const matScore = new THREE.MeshBasicMaterial({ color: 0xcccccc });
+
+        // --- CONSTRUCCIÓN ---
         const group = new THREE.Group();
         scene.add(group);
-        const spacing = 8;
+        const spacing = 10; // Más espacio entre años
         
-        const matAAA = new THREE.MeshStandardMaterial({ color: 0xff3333, roughness: 0.2, metalness: 0.8 });
-        const matAA = new THREE.MeshStandardMaterial({ color: 0xffcc00, roughness: 0.2, metalness: 0.8 });
-        const matIndie = new THREE.MeshStandardMaterial({ color: 0x00ffff, roughness: 0.2, metalness: 0.8 });
-        
-        // Font
         const loader = new FontLoader();
         loader.load('https://unpkg.com/three@0.154.0/examples/fonts/helvetiker_bold.typeface.json', (font) => {
+            
             data.forEach((d, i) => {
                 const z = -i * spacing;
                 
-                // Bars
-                const b1 = new THREE.Mesh(new THREE.BoxGeometry(1.5, d.aaa/6, 1.5), matAAA);
-                b1.position.set(-5, d.aaa/12, z);
-                group.add(b1);
-                
-                const b2 = new THREE.Mesh(new THREE.BoxGeometry(1.5, d.aa/6, 1.5), matAA);
-                b2.position.set(0, d.aa/12, z);
-                group.add(b2);
-                
-                const b3 = new THREE.Mesh(new THREE.BoxGeometry(1.5, d.indie/6, 1.5), matIndie);
-                b3.position.set(5, d.indie/12, z);
-                group.add(b3);
+                // 1. Barras (Escaladas)
+                const hAAA = d.aaa / 8;
+                const hAA = d.aa / 8;
+                const hIndie = d.indie / 8;
 
-                // Year Text on Floor
-                const tGeo = new TextGeometry(d.year.toString(), { font, size: 1, height: 0.1 });
-                const tMesh = new THREE.Mesh(tGeo, new THREE.MeshBasicMaterial({ color: 0x444444 }));
-                tMesh.position.set(8, 0.1, z);
+                // AAA (Izq)
+                const b1 = new THREE.Mesh(new THREE.BoxGeometry(2, hAAA, 2), matAAA);
+                b1.position.set(-6, hAAA/2, z);
+                group.add(b1);
+                addFloatingScore(d.aaa, -6, hAAA, z, font);
+
+                // AA (Centro)
+                const b2 = new THREE.Mesh(new THREE.BoxGeometry(2, hAA, 2), matAA);
+                b2.position.set(0, hAA/2, z);
+                group.add(b2);
+                addFloatingScore(d.aa, 0, hAA, z, font);
+
+                // Indie (Der)
+                const b3 = new THREE.Mesh(new THREE.BoxGeometry(2, hIndie, 2), matIndie);
+                b3.position.set(6, hIndie/2, z);
+                group.add(b3);
+                addFloatingScore(d.indie, 6, hIndie, z, font);
+
+                // 2. Año (Suelo)
+                const tGeo = new TextGeometry(d.year.toString(), { font, size: 2, height: 0.1 });
+                tGeo.center(); // Centrar texto
+                const tMesh = new THREE.Mesh(tGeo, matText);
+                tMesh.position.set(10, 0.1, z); // Al lado derecho
                 tMesh.rotation.x = -Math.PI/2;
+                tMesh.rotation.z = Math.PI/2; // Orientado hacia la cámara lateral
                 group.add(tMesh);
                 
-                // Store data for retrieval
+                // Trigger invisible para lógica
                 const trigger = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial({visible:false}));
                 trigger.position.set(0,0,z);
-                trigger.userData = d;
+                trigger.userData = d; // Guardar datos
                 group.add(trigger);
             });
             document.getElementById('loader').style.display = 'none';
         });
 
-        // Bloom
+        // Función auxiliar para poner números flotantes 3D
+        function addFloatingScore(val, x, y, z, font) {
+            const size = 0.8;
+            const geo = new TextGeometry(val.toString(), { font, size: size, height: 0.05 });
+            geo.center();
+            const mesh = new THREE.Mesh(geo, matScore);
+            mesh.position.set(x, y + 1.5, z); // Flotando encima de la barra
+            group.add(mesh);
+        }
+
+        // Bloom suave (Glow)
         const composer = new EffectComposer(renderer);
-        composer.addPass(new RenderPass(scene, camera));
+        const renderPass = new RenderPass(scene, camera);
+        composer.addPass(renderPass);
         const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-        bloom.threshold = 0.1; bloom.strength = 0.6; bloom.radius = 0.1;
+        bloom.threshold = 0.2; bloom.strength = 0.4; bloom.radius = 0.5;
         composer.addPass(bloom);
 
-        // --- CONTROL LOGIC ---
-        let targetZ = 0;
+        // --- SISTEMA DE CONTROL (MAGNÉTICO) ---
         let currentZ = 0;
-        let handX = 0.5;
-        let isFist = false;
-        let isFocused = false; // "Entering" a section state
-        let focusTargetZ = 0;
+        let targetZ = 0;
+        let handX = 0.5; // 0.5 = Centro (Neutral)
+        let isLocking = false; // Si estamos en proceso de auto-snap
+        let lockedIndex = -1; // Índice del año bloqueado
 
-        // UI Elements
-        const uiPanel = document.getElementById('detail-panel');
-        const feedback = document.getElementById('gesture-feedback');
+        // UI Refs
+        const navBadge = document.getElementById('nav-badge');
+        const statusText = document.getElementById('status-text');
+        const detailPanel = document.getElementById('detail-panel');
 
-        // Hand Tracking
+        // MediaPipe
         const video = document.getElementById('input-video');
         const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6 });
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.7 });
         
         hands.onResults((results) => {
             if (results.multiHandLandmarks.length > 0) {
                 const lm = results.multiHandLandmarks[0];
+                handX = 1 - lm[9].x; // Invertir eje X (Espejo)
                 
-                // 1. Navigation (X Position) - Inverted for mirror effect
-                handX = 1 - lm[9].x; // Middle finger knuckle
-                
-                // 2. Gesture Detection (Fist vs Open)
-                // Simple logic: distance between wrist and finger tips
-                const wrist = lm[0];
-                const tip = lm[12]; // Middle finger tip
-                const dist = Math.sqrt(Math.pow(wrist.x - tip.x, 2) + Math.pow(wrist.y - tip.y, 2));
-                
-                // Threshold calibration may vary, but < 0.15 is usually a fist/closed hand
-                isFist = dist < 0.2; 
+                // Cerrar puño (opcional, pero mantenemos la lógica por si acaso)
+                // Usaremos lógica de "Zona Muerta" para el anclaje automático
             } else {
-                handX = 0.5; // Stop if no hand
+                handX = 0.5; // Neutral si no hay mano
             }
         });
 
         const cam = new Camera(video, { onFrame: async () => await hands.send({image: video}), width: 640, height: 480 });
         cam.start();
 
-        // Animation Loop
         function animate() {
             requestAnimationFrame(animate);
 
-            // LOGIC
-            if (isFocused) {
-                // FOCUS MODE: Locked onto a specific year
-                feedback.innerHTML = "MODO DETALLE (ABRE LA MANO PARA SALIR)";
-                feedback.style.color = "#00ffff";
-                
-                // Smooth snap to target
-                currentZ += (focusTargetZ - currentZ) * 0.1;
-                
-                // Exit condition
-                if (!isFist) {
-                    isFocused = false;
-                    uiPanel.classList.remove('active');
-                }
-                
+            // --- LÓGICA DE NAVEGACIÓN MEJORADA ---
+            let speed = 0;
+            const deadZone = 0.15; // Ancho de la zona central
+            
+            // 1. Calcular velocidad basada en mano
+            if (handX > 0.5 + deadZone) {
+                speed = -0.6 * (handX - 0.5); // Avanzar (Derecha)
+                isLocking = false;
+            } else if (handX < 0.5 - deadZone) {
+                speed = 0.6 * (0.5 - handX); // Retroceder (Izquierda)
+                isLocking = false;
             } else {
-                // NAVIGATION MODE
-                uiPanel.classList.remove('active');
-                
-                // Movement logic
-                let speed = 0;
-                if (handX > 0.7) speed = -0.5; // Right -> Future
-                if (handX < 0.3) speed = 0.5;  // Left -> Past
-                
-                if (speed !== 0) {
-                    feedback.innerHTML = speed < 0 ? ">>> AVANZANDO" : "<<< RETROCEDIENDO";
-                    feedback.style.color = "white";
-                } else {
-                    feedback.innerHTML = "PARADO (CIERRA PUÑO PARA ENTRAR)";
-                    feedback.style.color = "#888";
-                }
+                // 2. LÓGICA MAGNÉTICA (La mano está en el centro)
+                isLocking = true;
+            }
 
+            // Aplicar velocidad al objetivo
+            if (!isLocking) {
                 targetZ += speed;
+                detailPanel.classList.remove('active');
                 
-                // Limits
-                const maxZ = 2;
-                const minZ = -(data.length * spacing) + 10;
-                targetZ = Math.max(minZ, Math.min(maxZ, targetZ));
+                navBadge.className = 'nav-status moving';
+                statusText.innerText = speed < 0 ? "AVANZANDO >>>" : "<<< RETROCEDIENDO";
                 
-                currentZ += (targetZ - currentZ) * 0.05;
+                // Limitar límites
+                const minZ = -(data.length - 1) * spacing;
+                targetZ = Math.max(minZ - 5, Math.min(5, targetZ)); // Margen pequeño
+                
+                lockedIndex = -1;
+            } else {
+                // 3. AUTO-SNAP (Atracción al año más cercano)
+                // Calcular qué índice está más cerca
+                const nearestIndex = Math.round(Math.abs(targetZ) / spacing);
+                const snapTarget = -nearestIndex * spacing;
+                
+                // Mover targetZ suavemente hacia el snapTarget
+                targetZ += (snapTarget - targetZ) * 0.1;
 
-                // Check for "Enter" gesture
-                if (isFist && Math.abs(speed) === 0) {
-                    // Find nearest year
-                    const index = Math.round(Math.abs(currentZ) / spacing);
-                    const d = data[index];
-                    
-                    if (d) {
-                        isFocused = true;
-                        focusTargetZ = -index * spacing; // Snap to exact position
+                // Si estamos muy cerca, activar panel
+                if (Math.abs(targetZ - snapTarget) < 0.5 && lockedIndex !== nearestIndex) {
+                    lockedIndex = nearestIndex;
+                    const d = data[nearestIndex];
+                    if(d) {
+                        navBadge.className = 'nav-status locked';
+                        statusText.innerText = "BLOQUEADO: " + d.year;
                         
-                        // Update UI
+                        // Actualizar UI
                         document.getElementById('ui-year').innerText = d.year;
-                        document.getElementById('ui-aaa').innerText = d.aaa;
-                        document.getElementById('ui-aa').innerText = d.aa;
-                        document.getElementById('ui-indie').innerText = d.indie;
+                        document.getElementById('ui-event').innerText = d.title || "Tendencia de Mercado";
+                        document.getElementById('ui-desc').innerText = d.desc || "Sin eventos críticos registrados este año.";
                         
-                        document.getElementById('ui-event-title').innerText = d.title || "Sin eventos destacados";
-                        document.getElementById('ui-event-desc').innerText = d.desc || "";
+                        // Animar barras HTML
+                        document.getElementById('fill-aaa').style.width = d.aaa + '%';
+                        document.getElementById('val-aaa').innerText = d.aaa;
                         
-                        uiPanel.classList.add('active');
+                        document.getElementById('fill-aa').style.width = d.aa + '%';
+                        document.getElementById('val-aa').innerText = d.aa;
+                        
+                        document.getElementById('fill-indie').style.width = d.indie + '%';
+                        document.getElementById('val-indie').innerText = d.indie;
+
+                        detailPanel.classList.add('active');
                     }
                 }
             }
 
-            // Camera update
-            // Standard View: Behind and above
-            let camY = 8;
-            let camZOffset = 15;
-            
-            if (isFocused) {
-                // Focus View: Lower and closer for drama
-                camY = 4;
-                camZOffset = 8;
-            }
+            // Interpolación de cámara (Smoothness extrema)
+            currentZ += (targetZ - currentZ) * 0.08;
 
-            camera.position.lerp(new THREE.Vector3(0, camY, currentZ + camZOffset), 0.05);
-            camera.lookAt(0, 2, currentZ - 5);
+            // Posicionamiento de cámara cinematográfica
+            // Un poco elevada, mirando hacia abajo y adelante
+            camera.position.set(0, 8, currentZ + 18);
+            camera.lookAt(0, 2, currentZ);
 
             composer.render();
         }
@@ -392,7 +436,5 @@
 
         animate();
     </script>
-</body>
-</html>
 </body>
 </html>
